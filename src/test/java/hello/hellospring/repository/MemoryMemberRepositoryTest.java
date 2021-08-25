@@ -1,10 +1,16 @@
 package hello.hellospring.repository;
 
 import hello.hellospring.domain.Member;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.sql.Connection;
 import java.util.Optional;
 
 import static hello.hellospring.repository.MemoryMemberRepository.store;
@@ -13,33 +19,21 @@ import static org.assertj.core.api.Assertions.*;
 public class MemoryMemberRepositoryTest {
     MemoryMemberRepository repository = new MemoryMemberRepository();
 
-    @AfterEach
-    public void afterEach(){
-        repository.clearStore();
-    };
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @SpringBootTest
+    public class ConnectionTests {
 
-    @Test
-    public void save(){
-        Member member = new Member();
-        member.setName("Spring");
-        repository.save(member);
-       Member result = repository.findById(member.getId()).get();
-//        Assertions.assertEquals(member, result);
-        assertThat(member).isEqualTo(result);
-    };
-    @Test
-    public void findByName(){
-        Member member1 = new Member();
-        member1.setName("Spring1");
-        repository.save(member1);
+        @Autowired
+        private SqlSessionFactory sqlSessionFactory;
 
-        Member member2 = new Member();
-        member2.setName("Spring2");
-        repository.save(member2);
-
-
-        Member result = repository.findByName("Spring1").get();
-        assertThat(result).isEqualTo(member1);
+        @Test
+        public void connection_test(){
+            try(Connection con = sqlSessionFactory.openSession().getConnection()){
+                System.out.println("커넥션 성공");
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 
 }
